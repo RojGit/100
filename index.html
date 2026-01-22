@@ -304,6 +304,170 @@
             50% { transform: scale(1.05); }
         }
 
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px rgba(37, 211, 102, 0.3); }
+            50% { text-shadow: 0 0 40px rgba(37, 211, 102, 0.6); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .confetti {
+            position: fixed;
+            pointer-events: none;
+            font-size: 2rem;
+        }
+
+        h1 {
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        .stat-box {
+            animation: slideIn 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .stat-box:nth-child(1) { animation-delay: 0.1s; }
+        .stat-box:nth-child(2) { animation-delay: 0.2s; }
+        .stat-box:nth-child(3) { animation-delay: 0.3s; }
+
+        .feature-card {
+            animation: slideIn 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .feature-card:nth-child(1) { animation-delay: 0.4s; }
+        .feature-card:nth-child(2) { animation-delay: 0.5s; }
+        .feature-card:nth-child(3) { animation-delay: 0.6s; }
+
+        .feature-icon {
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover .feature-icon {
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #0f0f0f;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 15px;
+            border: 1px solid #2a2a2a;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #25d366;
+            width: 0%;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px rgba(37, 211, 102, 0.5);
+        }
+
+        .milestone {
+            display: inline-block;
+            background-color: #25d366;
+            color: #000;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .celebration {
+            animation: bounce 0.6s ease-in-out;
+        }
+
+        .participant-item {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .participant-item:hover {
+            background-color: #1a1a1a;
+            transform: translateX(5px);
+        }
+
+        .counter-display {
+            animation: bounce 0.6s ease-in-out;
+        }
+
+        .counter-display.big-milestone {
+            animation: bounce 1s ease-in-out, glow 2s ease-in-out infinite;
+        }
+
+        .tooltip {
+            position: relative;
+            cursor: help;
+        }
+
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            background-color: #25d366;
+            color: #000;
+            padding: 8px 12px;
+            border-radius: 6px;
+            white-space: nowrap;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.85rem;
+            font-weight: 600;
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .achievement {
+            display: inline-block;
+            font-size: 1.5rem;
+            margin: 0 5px;
+            animation: bounce 0.6s ease-in-out;
+        }
+
+        .share-btn {
+            padding: 10px 20px;
+            background-color: #25d366;
+            color: #000;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .share-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+        }
+
         @media (max-width: 768px) {
             h1 {
                 font-size: 2.5rem;
@@ -339,6 +503,9 @@
                 <div class="stat-box">
                     <div class="stat-number" id="totalStat">0</div>
                     <div class="stat-label">Members Joined</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressBar"></div>
+                    </div>
                 </div>
                 <div class="stat-box">
                     <div class="stat-number">100</div>
@@ -347,6 +514,7 @@
                 <div class="stat-box">
                     <div class="stat-number" id="progressStat">0%</div>
                     <div class="stat-label">Complete</div>
+                    <div id="achievements"></div>
                 </div>
             </div>
 
@@ -387,6 +555,7 @@
                         onkeypress="handleKeyPress(event)">
                     <button class="cta-button" style="margin-left: 10px;"
                         onclick="addParticipant()">Add</button>
+                    <button class="share-btn" onclick="shareProgress()">📱 Share Progress</button>
                 </div>
 
                 <div class="participant-list" id="participantList"></div>
@@ -403,18 +572,91 @@
         <script>
         let participants = [];
 
+        const achievements = {
+            10: '🎊 10 Members!',
+            25: '⭐ 25 Members!',
+            50: '🚀 Halfway There!',
+            75: '💪 Almost There!',
+            100: '🎉 GOAL REACHED!'
+        };
+
+        let achieved = new Set();
+
+        function createConfetti() {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.textContent = ['🎉', '🎊', '⭐', '🚀', '💚'][Math.floor(Math.random() * 5)];
+            confetti.style.left = Math.random() * window.innerWidth + 'px';
+            confetti.style.top = '0px';
+            confetti.style.animation = `fall ${Math.random() * 2 + 2}s linear`;
+            document.body.appendChild(confetti);
+            
+            setTimeout(() => confetti.remove(), 3000);
+        }
+
+        function playSound(type) {
+            // Creates a beep sound using Web Audio API
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            if (type === 'add') {
+                oscillator.frequency.value = 800;
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+            } else if (type === 'milestone') {
+                oscillator.frequency.value = 1200;
+                gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+            }
+        }
+
+        function checkMilestones() {
+            const total = participants.length;
+            Object.keys(achievements).forEach(milestone => {
+                if (total >= milestone && !achieved.has(milestone)) {
+                    achieved.add(milestone);
+                    showMilestoneAnimation(achievements[milestone]);
+                    playSound('milestone');
+                    for (let i = 0; i < 10; i++) {
+                        createConfetti();
+                    }
+                }
+            });
+        }
+
+        function showMilestoneAnimation(message) {
+            const achieveDiv = document.getElementById('achievements');
+            const milestone = document.createElement('div');
+            milestone.className = 'achievement';
+            milestone.textContent = message.split(' ')[0];
+            achieveDiv.appendChild(milestone);
+            
+            setTimeout(() => milestone.remove(), 2000);
+        }
+
         function incrementCounter() {
             const counter = document.getElementById('counter');
-            counter.classList.add('pulse');
+            counter.classList.add('celebration');
             participants.push({ id: Date.now(), name: `Participant ${participants.length + 1}` });
             updateDisplay();
-            setTimeout(() => counter.classList.remove('pulse'), 1000);
+            playSound('add');
+            checkMilestones();
+            setTimeout(() => counter.classList.remove('celebration'), 600);
         }
 
         function decrementCounter() {
             if (participants.length > 0) {
                 participants.pop();
                 updateDisplay();
+                playSound('add');
             }
         }
 
@@ -425,6 +667,8 @@
                 participants.push({ id: Date.now(), name: name });
                 input.value = '';
                 updateDisplay();
+                playSound('add');
+                checkMilestones();
                 input.focus();
             }
         }
@@ -432,11 +676,30 @@
         function removeParticipant(id) {
             participants = participants.filter(p => p.id !== id);
             updateDisplay();
+            playSound('add');
         }
 
         function handleKeyPress(event) {
             if (event.key === 'Enter') {
                 addParticipant();
+            }
+        }
+
+        function shareProgress() {
+            const progress = ((participants.length / 100) * 100).toFixed(0);
+            const text = `🚀 I'm at ${progress}% of the 100 WhatsApp Challenge with ${participants.length} members! Join us! 💚`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: '100 WhatsApp Challenge',
+                    text: text,
+                    url: window.location.href
+                });
+            } else {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('Progress copied to clipboard! 📋');
+                });
             }
         }
 
@@ -451,19 +714,41 @@
             const progress = Math.min((participants.length / 100) * 100, 100).toFixed(0);
             progressStat.textContent = progress + '%';
 
+            // Update progress bar
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = progress + '%';
+
+            // Big milestone animation
+            if (participants.length % 10 === 0 && participants.length > 0) {
+                counter.classList.add('big-milestone');
+                setTimeout(() => counter.classList.remove('big-milestone'), 2000);
+            }
+
             const list = document.getElementById('participantList');
             list.innerHTML = '';
 
-            participants.forEach(p => {
+            participants.forEach((p, index) => {
                 const item = document.createElement('div');
                 item.className = 'participant-item';
                 item.innerHTML = `
-                    <span>${p.name}</span>
+                    <span>#${index + 1} - ${p.name}</span>
                     <button class="delete-btn" onclick="removeParticipant(${p.id})">Delete</button>
                 `;
                 list.appendChild(item);
             });
         }
+
+        // Add CSS animation for falling confetti
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fall {
+                to {
+                    transform: translateY(100vh) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
 
         function scrollToSection(id) {
             const element = document.getElementById(id);
