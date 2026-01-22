@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Verify Phone Number</title>
+        <link rel="stylesheet" href="100/style.css">
+    </head>
+    <body>
+        <div class="container">
+            <div class="verification-section">
+                <h2>📱 Verify Your Phone Number</h2>
+                <p class="verification-message">We've sent a verification code
+                    to <strong id="displayPhone"></strong></p>
+
+                <div class="otp-input-group">
+                    <input type="text" id="otpInput" class="otp-input"
+                        placeholder="Enter 6-digit code" maxlength="6">
+                    <button class="cta-button"
+                        onclick="verifyOTP()">Verify</button>
+                </div>
+
+                <p class="resend-text">Didn't receive the code? <button
+                        class="resend-btn" onclick="resendOTP()">Resend
+                        OTP</button></p>
+
+                <button class="cancel-btn" onclick="goBack()">Back</button>
+            </div>
+        </div>
+
+        <script src="100/verification.js"></script>
+    </body>
+</html>

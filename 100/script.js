@@ -1,4 +1,4 @@
-let participants = [];
+let participants = JSON.parse(localStorage.getItem('participants')) || [];
 
 const achievements = {
     10: '🎊 10 Members!',
@@ -122,7 +122,14 @@ function addParticipant() {
     }
 
     const fullPhone = selectedCountryCode + ' ' + phone;
-    participants.push({ id: Date.now(), name: name, phone: fullPhone });
+
+    // Store participant data in sessionStorage and redirect to verification
+    const tempData = {
+        name: name,
+        phone: fullPhone
+    };
+    sessionStorage.setItem('pendingParticipant', JSON.stringify(tempData));
+    window.location.href = 'verify.html';
     nameInput.value = '';
     phoneInput.value = '';
     updateDisplay();
@@ -133,6 +140,7 @@ function addParticipant() {
 
 function removeParticipant(id) {
     participants = participants.filter(p => p.id !== id);
+    localStorage.setItem('participants', JSON.stringify(participants));
     updateDisplay();
     playSound('add');
 }
