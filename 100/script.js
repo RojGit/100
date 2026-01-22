@@ -18,7 +18,7 @@ function createConfetti() {
     confetti.style.top = '0px';
     confetti.style.animation = `fall ${Math.random() * 2 + 2}s linear`;
     document.body.appendChild(confetti);
-    
+
     setTimeout(() => confetti.remove(), 3000);
 }
 
@@ -27,10 +27,10 @@ function playSound(type) {
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
-    
+
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
-    
+
     if (type === 'add') {
         oscillator.frequency.value = 800;
         gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
@@ -66,7 +66,7 @@ function showMilestoneAnimation(message) {
     milestone.className = 'achievement';
     milestone.textContent = message.split(' ')[0];
     achieveDiv.appendChild(milestone);
-    
+
     setTimeout(() => milestone.remove(), 2000);
 }
 
@@ -89,15 +89,20 @@ function decrementCounter() {
 }
 
 function addParticipant() {
-    const input = document.getElementById('nameInput');
-    const name = input.value.trim();
-    if (name) {
-        participants.push({ id: Date.now(), name: name });
-        input.value = '';
+    const nameInput = document.getElementById('nameInput');
+    const phoneInput = document.getElementById('phoneInput');
+    const name = nameInput.value.trim();
+    const phone = phoneInput.value.trim();
+    if (name && phone) {
+        participants.push({ id: Date.now(), name: name, phone: phone });
+        nameInput.value = '';
+        phoneInput.value = '';
         updateDisplay();
         playSound('add');
         checkMilestones();
-        input.focus();
+        nameInput.focus();
+    } else {
+        alert('Please enter both name and phone number');
     }
 }
 
@@ -116,7 +121,7 @@ function handleKeyPress(event) {
 function shareProgress() {
     const progress = ((participants.length / 100) * 100).toFixed(0);
     const text = `🚀 I'm at ${progress}% of the 100 WhatsApp Challenge with ${participants.length} members! Join us! 💚`;
-    
+
     if (navigator.share) {
         navigator.share({
             title: '100 WhatsApp Challenge',
@@ -159,7 +164,7 @@ function updateDisplay() {
         const item = document.createElement('div');
         item.className = 'participant-item';
         item.innerHTML = `
-            <span>#${index + 1} - ${p.name}</span>
+            <span>#${index + 1} - ${p.name} (${p.phone})</span>
             <button class="delete-btn" onclick="removeParticipant(${p.id})">Delete</button>
         `;
         list.appendChild(item);
