@@ -189,7 +189,7 @@ function updateDisplay() {
         const item = document.createElement('div');
         item.className = 'participant-item';
         item.innerHTML = `
-            <span>#${index + 1} - ${p.name} (${p.phone})</span>
+            <span>#${index + 1} - ${p.name}</span>
             <button class="delete-btn" onclick="removeParticipant(${p.id})">Delete</button>
         `;
         list.appendChild(item);
