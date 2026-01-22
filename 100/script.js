@@ -88,22 +88,40 @@ function decrementCounter() {
     }
 }
 
+function isValidPhoneNumber(phone) {
+    // Accepts various phone formats: 123-456-7890, (123) 456-7890, 123.456.7890, 1234567890, +1234567890, etc.
+    const phoneRegex = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/;
+    return phoneRegex.test(phone.replace(/\s/g, ''));
+}
+
 function addParticipant() {
     const nameInput = document.getElementById('nameInput');
     const phoneInput = document.getElementById('phoneInput');
     const name = nameInput.value.trim();
     const phone = phoneInput.value.trim();
-    if (name && phone) {
-        participants.push({ id: Date.now(), name: name, phone: phone });
-        nameInput.value = '';
-        phoneInput.value = '';
-        updateDisplay();
-        playSound('add');
-        checkMilestones();
-        nameInput.focus();
-    } else {
-        alert('Please enter both name and phone number');
+    
+    if (!name) {
+        alert('Please enter a name');
+        return;
     }
+    
+    if (!phone) {
+        alert('Please enter a phone number');
+        return;
+    }
+    
+    if (!isValidPhoneNumber(phone)) {
+        alert('Please enter a valid phone number (e.g., 123-456-7890 or +1234567890)');
+        return;
+    }
+    
+    participants.push({ id: Date.now(), name: name, phone: phone });
+    nameInput.value = '';
+    phoneInput.value = '';
+    updateDisplay();
+    playSound('add');
+    checkMilestones();
+    nameInput.focus();
 }
 
 function removeParticipant(id) {
