@@ -9,6 +9,7 @@ const achievements = {
 };
 
 let achieved = new Set();
+let selectedCountryCode = '+1';
 
 function createConfetti() {
     const confetti = document.createElement('div');
@@ -94,28 +95,34 @@ function isValidPhoneNumber(phone) {
     return phoneRegex.test(phone.replace(/\s/g, ''));
 }
 
+function updateCountryCode() {
+    const countrySelect = document.getElementById('countrySelect');
+    selectedCountryCode = countrySelect.value;
+}
+
 function addParticipant() {
     const nameInput = document.getElementById('nameInput');
     const phoneInput = document.getElementById('phoneInput');
     const name = nameInput.value.trim();
     const phone = phoneInput.value.trim();
-    
+
     if (!name) {
         alert('Please enter a name');
         return;
     }
-    
+
     if (!phone) {
         alert('Please enter a phone number');
         return;
     }
-    
+
     if (!isValidPhoneNumber(phone)) {
-        alert('Please enter a valid phone number (e.g., 123-456-7890 or +1234567890)');
+        alert('Please enter a valid phone number (e.g., 123-456-7890)');
         return;
     }
-    
-    participants.push({ id: Date.now(), name: name, phone: phone });
+
+    const fullPhone = selectedCountryCode + ' ' + phone;
+    participants.push({ id: Date.now(), name: name, phone: fullPhone });
     nameInput.value = '';
     phoneInput.value = '';
     updateDisplay();
