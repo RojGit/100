@@ -1,15 +1,8 @@
 let tempParticipant = null;
-let generatedOTP = null;
 let otpAttempts = 0;
-
-// Generate a random 6-digit OTP
-function generateOTP() {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-}
 
 // Initialize verification page
 function initVerification() {
-    const urlParams = new URLSearchParams(window.location.search);
     const participantData = sessionStorage.getItem('pendingParticipant');
 
     if (!participantData) {
@@ -21,14 +14,33 @@ function initVerification() {
     tempParticipant = JSON.parse(participantData);
     document.getElementById('displayPhone').textContent = tempParticipant.phone;
 
-    // Generate and "send" OTP
-    generatedOTP = generateOTP();
-    console.log('🔐 OTP for testing:', generatedOTP);
-    showOTPMessage();
+    // Send OTP via Twilio Verify
+    sendOTP();
 }
 
-function showOTPMessage() {
-    alert(`📨 OTP sent to ${tempParticipant.phone}\n\n🔐 For testing: ${generatedOTP}`);
+async function sendOTP() {
+    try {
+        const response = await fetch('/api/send-sms', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                phoneNumber: tempParticipant.phone,
+                action: 'send'
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert(`✅ ${data.message}`);
+        } else {
+            alert(`❌ Error: ${data.error}`);
+            setTimeout(() => window.location.href = 'index.html', 2000);
+        }
+    } catch (error) {
+        console.error('Error sending OTP:', error);
+        alert('Failed to send OTP. Please try again.');
+    }
 }
 
 function verifyOTP() {
@@ -39,27 +51,51 @@ function verifyOTP() {
         return;
     }
 
-    if (otpInput === generatedOTP) {
-        alert('✅ Verification successful!');
-        addVerifiedParticipant();
-    } else {
-        otpAttempts++;
-        if (otpAttempts >= 3) {
-            alert('❌ Too many failed attempts. Please try again later.');
-            window.location.href = 'index.html';
+    if (otpInput.length !== 6) {
+        alert('OTP must be 6 digits');
+        return;
+    }
+
+    verifyCode(otpInput);
+}
+
+async function verifyCode(code) {
+    try {
+        const response = await fetch('/api/send-sms', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                phoneNumber: tempParticipant.phone,
+                action: 'verify',
+                code: code
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert('✅ Verification successful!');
+            addVerifiedParticipant();
         } else {
-            alert('❌ Invalid OTP. Please try again.');
-            document.getElementById('otpInput').value = '';
+            otpAttempts++;
+            if (otpAttempts >= 3) {
+                alert('❌ Too many failed attempts. Please try again later.');
+                window.location.href = 'index.html';
+            } else {
+                alert(`❌ Invalid code. Attempts remaining: ${3 - otpAttempts}`);
+                document.getElementById('otpInput').value = '';
+            }
         }
+    } catch (error) {
+        console.error('Error verifying OTP:', error);
+        alert('Failed to verify OTP. Please try again.');
     }
 }
 
 function resendOTP() {
-    generatedOTP = generateOTP();
     otpAttempts = 0;
-    console.log('🔐 New OTP for testing:', generatedOTP);
-    alert(`📨 OTP resent to ${tempParticipant.phone}\n\n🔐 For testing: ${generatedOTP}`);
     document.getElementById('otpInput').value = '';
+    sendOTP();
 }
 
 function addVerifiedParticipant() {
